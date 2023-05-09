@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Knuppe.MA.SharpNL" Version="1.4.0" />
+  </ItemGroup>
+
 </Project>
