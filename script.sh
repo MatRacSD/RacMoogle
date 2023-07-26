@@ -20,27 +20,50 @@ if [[ "$1" == "run" ]]; then
 elif [[ "$1" == "report" ]]; then
     pdflatex informe.tex
 
+elif [[ "$1" == "show_report" ]]; then
+    if [[ -n "$2" ]]; then
+        APP="$2"
+    else
+        if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+            APP="start"
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            APP="open"
+        elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+            APP="xdg-open"
+        fi
+    fi
+    pdflatex informe.tex
+    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+        $APP "$(cygpath -w informe.pdf)"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        $APP -a "$2" informe.pdf
+    elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+        $APP informe.pdf
+    fi
+
 elif [[ "$1" == "slides" ]]; then
     pdflatex presentacion.tex
 
 
 elif [[ "$1" == "show_slides" ]]; then
+    if [[ -n "$2" ]]; then
+        APP="$2"
+    else
+        if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
+            APP="start"
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            APP="open"
+        elif [[ "$OSTYPE" == "linux-gnu" ]]; then
+            APP="xdg-open"
+        fi
+    fi
     pdflatex presentacion.tex
     if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
-        start "$(cygpath -w presentacion.pdf)"
+        $APP "$(cygpath -w presentacion.pdf)"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        open presentacion.pdf
+        $APP -a "$2" presentacion.pdf
     elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-        xdg-open presentacion.pdf
-    fi
-elif [[ "$1" == "show_report" ]]; then
-    pdflatex informe.tex
-    if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
-        start "$(cygpath -w informe.pdf)"
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        open informe.pdf
-    elif [[ "$OSTYPE" == "linux-gnu" ]]; then
-        xdg-open informe.pdf
+        $APP presentacion.pdf
     fi
 
 elif [[ "$1" == "clean" ]]; then
