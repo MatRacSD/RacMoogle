@@ -82,7 +82,7 @@ namespace MoogleEngine
         /// <typeparam name="double"></typeparam>
         /// <returns></returns>
 
-        public Dictionary<string, double> root_words = new Dictionary<string, double>();
+        public Dictionary<string, double> rootWords = new Dictionary<string, double>();
         public Document(string titl)
         {
             Title = titl;
@@ -103,6 +103,7 @@ namespace MoogleEngine
         /// </summary>
         public void Normalize()
         {
+            
             module = 0;
             for (int i = 0; i < TFIDF.Length; i++)
             {
@@ -117,6 +118,7 @@ namespace MoogleEngine
         /// </summary>
         public void NormalizeR()
         {
+            
             moduleR = 0;
             for (int i = 0; i < TFRoot.Length; i++)
             {
@@ -179,7 +181,7 @@ namespace MoogleEngine
         /// <param name="vector"></param>
         public void SimilarityCosine(Query vector)
         {
-            score = DocumentUtils.ScalarProduct(TFIDF, vector.TFIDF) / (module * vector.module);
+            score = DocumentUtils.ScalarProduct(TFIDF, vector.TFIDF) / (module * vector.module + 0.00000001);
             score *= vector.ScoreMod(this);
 
         }
@@ -190,7 +192,7 @@ namespace MoogleEngine
         public void SimilarityCosineR(Query vector)
         {
             double a = (0.4f) * DocumentUtils.ScalarProduct(TFRoot, vector.TFRoot)  ;
-            double b = (moduleR * vector.moduleR);
+            double b = (moduleR * vector.moduleR + 0.00000001);
             score += a / b;
 
         }
@@ -238,9 +240,9 @@ namespace MoogleEngine
             int counter = 0;
             foreach (var item in words.rootWords)
             {
-                if (root_words.ContainsKey(item.Key))
+                if (rootWords.ContainsKey(item.Key))
                 {
-                    TFRoot[counter] = root_words[item.Key] / ((double)root_words.Count() * Math.Log(total / item.Value  ) + 1.1f);
+                    TFRoot[counter] = rootWords[item.Key] / ((double)rootWords.Count() * Math.Log(total / item.Value  ) + 1.1f);
 
                 }
                 else
@@ -308,13 +310,13 @@ namespace MoogleEngine
 
                     string aux2 = stm2.Stem(pair.Key);
 
-                    if (!root_words.ContainsKey(aux2))
+                    if (!rootWords.ContainsKey(aux2))
                     {
-                        root_words.Add(aux2, 1);
+                        rootWords.Add(aux2, 1);
                     }
                     else
                     {
-                        root_words[aux2] += 1;
+                        rootWords[aux2] += 1;
                     }
                 }
                 catch (Exception)

@@ -87,18 +87,18 @@ namespace MoogleEngine
         /// <summary>
         /// Inicializa un vector con la busqueda 
         /// </summary>
-        /// <param name="query_string">Representa la cadena de string de la busqueda</param>
+        /// <param name="queryString">Representa la cadena de string de la busqueda</param>
         /// <param name="words">La coleccion de palabras de la coleccion de documentos</param>
         /// <param name="total">Total de documentos de la coleccion</param>
         /// <returns></returns>
-        public static Query QueryLoader(string query_string, Wordscollection words, double total)
+        public static Query QueryLoader(string queryString, Wordscollection words, double total)
         {
 
 
             Query queryVector = new Query();
             ///Se reliza el mismo procedimiento utilizado con los documentos
             string pattern = @"[^a-zA-Z0-9á-úÁ-Úä-üÄ-Ü]+";
-            queryVector.content = Regex.Split(query_string.ToLowerInvariant().Trim(), pattern);
+            queryVector.content = Regex.Split(queryString.ToLowerInvariant().Trim(), pattern);
             queryVector.content = queryVector.content.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
             queryVector.content = queryVector.content.Where((d) => !DocumentUtils.removableWords.Contains(d)).ToArray();
             if (queryVector.content.Length == 0)
@@ -112,7 +112,7 @@ namespace MoogleEngine
             queryVector.CalculateTFR(words, total);
             queryVector.Normalize();
             queryVector.NormalizeR();
-            queryVector.Initialice(query_string);
+            queryVector.Initialice(queryString);
 
 
             return queryVector;
@@ -246,12 +246,12 @@ namespace MoogleEngine
             {
                 vector.wordcoll = di;
                 vector.FindSimilar = true;
-                /*foreach (var item in di)
+                foreach (var item in di)
                 {
                     if(!vector.wordcoll.Contains(item))
 
                     vector.wordcoll.Add(item.Key, item.Value);
-                }*/
+                }
             }
         }
         /// <summary>

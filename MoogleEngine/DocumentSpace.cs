@@ -2,6 +2,8 @@
 
 
 
+using System.Security.Cryptography;
+
 namespace MoogleEngine
 {
     /// <summary>
@@ -25,6 +27,8 @@ namespace MoogleEngine
             docs = DocumentUtils.DocLoader();
             words = new Wordscollection(docs);
             double length = docs.Count;
+            
+            
             Parallel.ForEach(docs, (Document doc) =>
             {
                 doc.CalculateTF(words, length);
@@ -55,15 +59,17 @@ namespace MoogleEngine
             docs.Sort();
             docs.Reverse();
 
-            List<SearchItem> si = new List<SearchItem>();
+            
+
+            List<SearchItem> searchItems = new List<SearchItem>();
             for (int i = 0; i < docs.Count; i++)
             {
                 if (docs[i].score > 0) ///Se devuelven los documentos con score mayor que 0
-                    si.Add(new SearchItem(docs[i].ToString(), docs[i].GetSnippet(queryVector.wordcoll.Keys.ToArray()), (float)docs[i].score));
+                    searchItems.Add(new SearchItem(docs[i].ToString(), docs[i].GetSnippet(queryVector.wordcoll.Keys.ToArray()), (float)docs[i].score));
                 if (i == 5)
                     break;
             }
-            if (si.Count() < 4) ////si se ecuentran pocos archivos se realiza nuevamente la búsqueda con palabras similares
+            if (searchItems.Count() < 4) ////si se ecuentran pocos archivos se realiza nuevamente la búsqueda con palabras similares
             {
                 queryVector.FindSimilarWords(words);
                 if (queryVector.FindSimilar)
@@ -81,15 +87,19 @@ namespace MoogleEngine
                     for (int i = 0; i < docs.Count; i++)
                     {
                         if (docs[i].score > 0)
-                            si.Add(new SearchItem(docs[i].ToString(), docs[i].GetSnippet(queryVector.wordcoll.Keys.ToArray()), (float)docs[i].score));
+                            searchItems.Add(new SearchItem(docs[i].ToString(), docs[i].GetSnippet(queryVector.wordcoll.Keys.ToArray()), (float)docs[i].score));
                         if (i == 5)
                             break;
                     }
                 }
                 else ////Si despues de realizar la busqueda con elementos similares no se encuentra nada, se informa que no se enecontró ningun elemento
                 {
-                    SearchItem si1 = new SearchItem("No se encontró ningún elemento", "...", 0);
-                    return new SearchResult(new SearchItem[] { si1 }, "...");
+                    if(searchItems.Count == 0)
+                    {
+                       return new SearchResult(new SearchItem[] { new("No se encontró ningún elemento","...",0) }, "...");
+                    }
+                    
+                    
                 }
             }
 
@@ -99,12 +109,15 @@ namespace MoogleEngine
             {
                 suggestion += " " + item.Key;
             }
-            foreach (var item in si)
+            
+                
+            
+            foreach (var item in searchItems)
             {
-                Console.WriteLine(item.Title + "_______" + item.Score);
+                Console.WriteLine(item.Title + "<_______>" + item.Score);
             }
 
-            return new SearchResult(si.ToArray(), suggestion);
+            return new SearchResult(searchItems.ToArray(), suggestion);
 
         }
         
