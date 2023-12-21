@@ -1,0 +1,96 @@
+\documentclass{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{graphicx}
+
+\title{Moogle!}
+\author{Raciel Alejandro Simón Domenech}
+\institute{MATCOM}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\begin{frame}{Descripción}
+Moogle! es una aplicación \textit{totalmente original} cuyo propósito es buscar inteligentemente un texto en un conjunto de documentos.
+
+\bigskip
+
+Es una aplicación web, desarrollada con tecnología .NET Core 6.0, específicamente usando Blazor como \textit{framework} web para la interfaz gráfica, y en el lenguaje Csharp.
+
+\bigskip
+
+La aplicación está dividida en dos componentes fundamentales:
+\begin{itemize}
+\item MoogleServer: es un servidor web que renderiza la interfaz gráfica y sirve los resultados.
+\item MoogleEngine: es una biblioteca de clases donde está implementada la lógica del algoritmo de búsqueda.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Funcionamiento}
+La búsqueda se realiza utilizando el modelo vectorial del TF-IDF, para lo cual se expresa cada documento y el query como vectores, entonces se calcula el coseno de similitud de cada vector documento con el vector query y se establece este valor como score, valor que determina la importancia del documento.
+
+\bigskip
+
+Al iniciar el programa, se indexan todos los documentos con extensión .txt de la carpeta Content, en caso de no existir dicha carpeta, se lanzará una excepción.
+
+\bigskip
+
+Después se construye un vector donde cada posición la ocupa cada palabra que exista en el documento, excluyendo las palabras que carecen de relevancia como conjunciones, preposiciones, etc.
+
+\bigskip
+
+Posteriormente, se vectoriza cada documento, expresándolos como un vector donde cada posición contiene el peso TF-IDF de una palabra de la colección de documentos en dicho documento.
+
+\bigskip
+
+Una vez completada dicha operación se procede a extraer las raíces de las palabras del vector utilizando la librería SharpNL y se calculan los pesos TF-IDF de dichas raíces.
+\end{frame}
+
+\begin{frame}{Funcionamiento}
+Una vez realizado el preprocesamiento de los documentos, el programa termina de iniciar y espera por el input del usuario.
+
+\bigskip
+
+Una vez el usuario ha introducido la consulta, esta se vectoriza, se calculan los pesos tf-idf de sus palabras, posteriormente se busca en la colección de documentos, utilizando la distancia de Damerau - Levenshtein, aquellas palabras de la consulta que no aparecen en ningún documento.
+
+\bigskip
+
+Si se encuentran palabras similares, se sustituyen por las que no aparecieron y se calcula sus pesos tf-idf.
+
+\bigskip
+
+Después se determina el coseno de similitud entre el vector de la consulta y los vectores de los documentos, y el valor resultante se le asigna como score (relevancia del documento según la consulta del usuario) a cada documento.
+
+\bigskip
+
+Una vez concluido esto, se llevan las palabras de la consulta a sus raíces, se vectoriza, se calculan sus pesos tf-idf y el coseno de similitud entre los vectores de las palabras raíces de cada documento y la de la consulta, y el valor obtenido se le suma a los scores obtenidos.
+
+\bigskip
+
+Se ordenan y se devuelven en orden descendente los cinco primeros documentos cuyo score sea mayor que 0.
+
+\bigskip
+
+En caso de no existir ningún documento con score mayor que 0 se devuelve un mensaje que indica que no hay resultados para la consulta realizada.
+\end{frame}
+
+\begin{frame}{Complementos}
+
+El programa cuenta con varios complementos que pueden resultar útiles para realizar búsquedas más específicas u ofrecer información adicional al usuario:
+
+\begin{itemize}
+\item Operadores para búsquedas más específicas (!, \^{}, *, ~)
+\item Sugerencia de términos relacionados
+\item Snippet de texto relevante en los resultados
+\end{itemize}
+
+\end{frame}
+
+
+
+\end{document}

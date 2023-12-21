@@ -1,0 +1,205 @@
+\documentclass{report}
+\title{\Huge Moogle!}
+\author{\LARGE Raciel Alejandro Simon Domenech}
+
+\date{}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+
+\definecolor{csharp-property}{RGB}{43,145,175}
+
+
+
+\newcommand{\csharpproperty}[1]{\textcolor{csharp-property}{\texttt{#1}}}
+
+
+\renewcommand{\thechapter}{}
+\renewcommand{\thesection}{}
+\renewcommand{\thesubsection}{}
+
+\renewcommand{\abstractname}{Introducción}
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries}{}{0pt}{\Huge}
+
+\begin{document}
+\begin{titlepage}
+  
+  
+
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[width = 4cm,height = 2cm]{moogle.png}
+\end{figure}
+
+\maketitle
+
+\end{titlepage}
+\tableofcontents
+\begin{abstract}
+  Moogle! es una aplicación *totalmente original* cuyo propósito es buscar inteligentemente un texto en 
+un conjunto de documentos.\\
+Es una aplicación web, desarrollada con tecnología .NET Core 6.0, específicamente usando Blazor como 
+*framework* web para la interfaz gráfica, y en el lenguaje Csharp.\\
+La aplicación está dividida en dos componentes fundamentales:\\
+- MoogleServer: es un servidor web que renderiza la interfaz gráfica y sirve los resultados.\\
+- MoogleEngine: es una biblioteca de clases donde está implementada la lógica del algoritmo de 
+búsqueda.\\
+La búsqueda se realiza utilizando el modelo vectorial del TF-IDF, para lo cual se expresa cada documento 
+y el query como vectores, entonces se calcula el coseno de similitud de cada vector documento con el 
+vector query y se establece este valor como score,valor que determina la importancia del documento.
+\end{abstract}
+\chapter{Preprocesamiento}
+ Al iniciar el programa , se indexan todos los documentos con extensión .txt de la carpeta Content, en caso de no existir
+  dicha carpeta, se lanzará una excepción. Después se construye un vector donde cada posición la ocupa cada palabra 
+  que exista en el documento, excluyendo las palabras que carecen de relevancia como conjunciones, preposiciones, etc.
+  Posteriormente, se vectoriza cada documento, expresándolos como un vector donde cada posición contiene el peso TF-IDF
+  de una palabra de la colección de documentos en dicho documento. Una vez completada dicha operación se procede a extraer
+  las raíces de las palabras del vector utilizando la librería SharpNL y se calculan los pesos
+  TF-IDF de dichas raíces.  
+  \chapter{Búsqueda}
+ Una vez realizado el preprocesamiento de los documentos, el programa termina de iniciar y espera por el input del usuario,
+ una vez el usuario ha introducido la consulta, esta se vectoriza, se calculan los pesos tf-idf de sus palabras, posteriormente se busca en la colección de documentos, utilizando la distancia
+ de Damerau - Levenshtein,  aquellas palabras de la consulta que no aparecen en ningún documento, si se encuentran palabras similares, se sustituyen
+ por las que no aparecieron y se calcula sus pesos tf-idf, después se determina el coseno de similitud entre el vector de la consulta y los vectores de los documentos, y el valor resultante se le asigna como
+ score(relevancia del documento según la consulta del usuario) a cada documento. Una vez concluido esto, se llevan las palabras
+ de la consulta a sus raíces, se vectoriza, se calculan sus pesos tf-idf y el coseno de similitud entre los vectores de las palabras
+ raíces de cada documento y la de la consulta, y el valor obtenido se le suma a los scores obtenidos. Se ordenan y se devuelven 
+ en orden descendente los cinco primeros documentos cuyo score sea mayor que 0. En caso de no existir ningún documento con score mayor que 0 
+ se devuelve un mensaje que indica que no hay resultados para la consulta realizada.
+
+ \chapter{Complementos}
+ 
+ El programa cuenta con varios complementos que pueden resultar útiles para realizar búsquedas más específicas u ofrecer
+ información adicional al usuario.
+
+ \section{Operadores}
+
+ El programa cuenta con cuatro operadores que determinarán condiciones a la hora de considerar ciertos documentos relevantes o no.
+ Estos son:  !, \^{} , * , ~. Cada operador se coloca al inicio de la palabra a la cual se le quiere aplicar, salvo el operador ~
+ que se coloca entre dos palabras
+
+ \subsection{!}
+ Este operador implica que cada documento donde aparece la palabra a la que se le aplica carece de relevancia y por tanto su score será 0.
+ \subsection{\^{}}
+Este operador implica que cada documento donde no aparezca la palabra a la que se aplica carece de relevancia y por tanto su score es 0.
+\subsection{*}
+Este operador implica que cada documento donde aparezca la palabra a la que se le aplica, tendrá prioridad (este operador es acumulable
+, es decir, se pueden colocar varios y el score del documento donde aparezca la palabra se multiplicará por la cantidad de veces que se haya 
+colocado el operador + 1).
+\subsection{~}
+Este operador toma en consideración las dos palabras adyacentes a el (en caso de no haber ninguna palabra a la izquierda o a la derecha simplemente 
+no tiene efecto) y cada documento donde aparezcan esas dos palabras se multiplicará su score por un número que va a ser mayor según qué tan pequeña 
+sea la distancia mínima  entre estas dos palabras en el documento.
+
+\section{Funcionalidades extras}
+\subsection{Sugerencia}
+Una vez completado toto el proceso de búsqueda y se han devuelto los documentos relevantes para la consulta, 
+se busca en la colección de documentos las palabras similares a las del query y se construye una Sugerencia que 
+el usuario puede utilizar para realizar una nueva búsqueda.
+\subsection{Snippet}
+Antes de mostrar los documentos con score relevante, se busca en estos una palabra del query que aparezca en estos, se localiza
+su posición en este y a la hora de mostrar el documento en los resultados de la búsqueda se muestra también un fragmento del documento
+donde aparece la palabra.
+
+
+
+\chapter{Biblioteca de clases}
+\section{\LARGE\csharpproperty{Doc}}
+Esta clase representa un documento, y contiene toda la información de este, hereda la interfaz
+IComparable e implementa el método CompareTo para organizar los documentos según la importancia.
+Esta clase contiene las siguientes propiedades:
+\subsection{\csharpproperty{Title}}
+Representa el título del documento.
+\subsection{\csharpproperty{score}}
+Representa el valor numérico de la importancia del documento según la query introducida.
+\subsection{\csharpproperty{TFIDF}}
+Array de valores double que representa el vector de los pesos TF-IDF de todas las palabras de la colección en el documento.
+\subsection{\csharpproperty{TF\_{}root}}
+Similar al anterior, pero este representa los pesos TF-IDF de todas las raíces de las palabras de la colección en el documento.
+\subsection{\csharpproperty{content\_{}unnormalized}}
+Array de strings que contiene todas las palabras del documento en el mismo orden en que aparecen.
+\subsection{\csharpproperty{content}}
+Similar al anterior pero ya no contiene pronombres, preposiciones, artículos y conjunciones.
+\subsection{\csharpproperty{doc\_{}path}}
+String que contiene la dirección en la cual se encuentra el documento.
+\subsection{\csharpproperty{module}}
+Representa el módulo del vector de los pesos TF-IDF.
+\subsection{\csharpproperty{wordcoll}}
+Diccionario que contiene todas las palabras del documento(sin repetición) y a cada una de ellas se le asocia un valor que representa la cantidad de apariciones en el documento.
+\subsection{\csharpproperty{root\_{}words}}
+Similar al anterior, pero contiene las raíces de las palabras y el número de apariciones de esta en el documento (nótese que dos palabras distintas pueden tener la misma raíz, por lo que la cantidad de componentes del vector de los pesos TF-IDF de las raíces probablemente disminuya con respecto al vector de las palabras originales).
+
+
+\subsection{\csharpproperty{Normalize}}
+Método que calcula el módulo del vector de las palabras.
+\subsection{\csharpproperty{NormalizeR}}
+Similar al anterior pero con el vector de las palabras raíces
+\subsection{\csharpproperty{InitializeWordsColl}}
+Inicializa el diccionario de la colección de palabras del documento, si una palabra ya está incluida, le aumenta el número de apariciones en 1, en caso contrario, agrega al diccionario un nuevo elemento cuyo key es la palabra y como value 1.
+\subsection{\csharpproperty{GetDistance}}
+Método que recibe dos palabras, y en caso de estas estar presentes en el documento, determina la distancia mínima entre las apariciones de esta, para ello calcula todas las distancias y retorna la menor.
+\subsection{\csharpproperty{SimilarityCosine}}
+Recibe como parámetro una instancia de la clase Query, y calcula el coseno de similitud entre los vectores de los pesos TF-IDF de la clase desde donde se invoca y la clase Query que se le pasa como parámetro, para ello, se realiza la multiplicación escalar de dichos vectores y se divide entre la multiplicación de sus magnitudes, y establece el score en base a este resultado.
+\subsection{\csharpproperty{SimilarityCosineR}}
+Similar al expuesto anteriormente, pero realiza las operaciones con los vectores de los pesos TF-IDF de las raíces.
+\subsection{\csharpproperty{CalculateTF}}
+Método que recibe como parámetros un Wordscollection y, un double que representa la cantidad de documentos de la colección, inicializa el vector de los pesos TF-IDF y calcula el valor de cada componente de dicho vector con la fórmula del TF-IDF.
+\subsection{\csharpproperty{CalculateTFR}}
+Similar al anterior, pero se trabaja con el vector de los pesos TF-IDF de las palabras raíces.
+\subsection{\csharpproperty{GetFragment}}
+Método que recibe una palabra y devuelve un fragmento del documento que contenga a la palabra, básicamente una cadena de texto que incluya la palabra y un poco de texto antes y después de ella. Este método es útil para mostrar un fragmento del documento que coincide con una consulta de búsqueda.
+
+\subsection{\csharpproperty{GetSnippet}} : Recibe un array de palabras y devuelve un fragmento del texto para la primera palabra que 
+aparezca en el documento invocando el método GetFragment.
+\subsection{\csharpproperty{Stemmer}} : Método que inicializa el diccionario de las raíces de las palabras utilizando la librería 
+SharpNL.
+
+\subsection{\csharpproperty\LARGE{Query}}
+Esta clase representa el query vectorizado introducido por el usuario. Hereda de la clase Doc e 
+implementa otras funcionalidades.
+Posee las siguientes propiedades:
+\subsection{\csharpproperty{bool SpChar}} Matriz que contiene información sobre los caracteres especiales introducidos por el 
+usuario, específicamente la primera fila representa \^{} y la segunda fila ! 
+\subsection{\csharpproperty{double AcumSpChar}}  Matriz que contiene un valor que se determina según el número de * que se 
+escribieron antes de una palabra.
+\subsection{\csharpproperty{Dictionary<string, string> ProxSpChar}}  Diccionario donde cada par de palabras representa las palabras 
+cuya distancia tienen relevancia, esto queda determinado por el carácter ~
+Nótese que para las dos matrices mencionadas anteriormente, a cada componente se le asocia una 
+palabra del query, y por tanto, se le asocia un carácter especial.
+Esta clase tiene los siguientes métodos:
+\subsection{\csharpproperty{InicialiceSpecialContent}} Este método inicializa las propiedades mencionadas anteriormente 
+asignándole los caracteres especiales según corresponda.
+\subsection{\csharpproperty{Initialice}} Método que invoca al método anterior.
+\subsection{\csharpproperty{GetMultiply}} Método que recibe una palabra y determina cuántos * son válidos y por tanto su 
+multiplicidad.
+\subsection{\csharpproperty{ScoreMod}} Método que recibe un Doc como parámetro y modifica su score según los caracteres 
+especiales que se apliquen a las palabras del query que aparezcan en el documento.
+\section{\LARGE\csharpproperty{Wordscollection}}
+Esta clase representa la colección de palabras del documento. Su constructor recibe una lista con todos 
+los Doc e inicializa la propiedad Dictionary<string, double> word\_{}count donde guarda cada palabra del
+documento y el valor de la cantidad de documentos donde aparece dicha palabra.
+Presenta el método Stemmer que funciona igual que el de la clase Doc e inicializa la propiedad 
+Dictionary<string, double> root\_{}words la cual contiene todas las palabras raíces y el valor de la cantidad 
+de documentos donde aparecen.
+\section{\LARGE\csharpproperty{DocumentUtils}}
+Clase estática que contiene Métodos importantes a la hora de realizar la búsqueda.
+Esta clase contiene la propiedad string removable\_{}words array que contiene los pronombres, 
+preposiciones, artículos y conjunciones que son removidas al filtrar los documentos.
+
+\subsection{\csharpproperty{DocLoader}} Método que inicializa, por cada documento de texto de la carpeta content, un instancia del tipo 
+Doc y los devuelve como una Lista de Doc
+\subsection{\csharpproperty{QueryLoader}} Similar al anterior, pero solo crea una instancia de la clase Query con el input del usuario.
+\subsection{\csharpproperty{ScalarProduct}} Método que recibe dos vectores y realiza el producto escalar de estos.
+\subsection{\csharpproperty{DamerauLevenshteinDistance}} Método que calcula la diferencia entre dos palabras.
+\subsection{\csharpproperty{Where}} Método que recibe un Enumerable y un delegado Func T,bool y devuelve un Enumerable con 
+los elementos que cumplen con la condición.
+\subsection{\csharpproperty{FindSimilarWords}} Método que se invoca desde un vector de tipo Doc y recibe como parámetro un 
+Wordscollection, sustituye las palabras del query que no tengan aparición por otras similares que sí 
+aparezcan
+
+
+
+\end{document}
